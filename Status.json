@@ -1,0 +1,17 @@
+{
+  "user_id": "Agent1009",
+  "perfil": {
+    "edad": 47,
+    "peso_objetivo": 80.0,
+    "fecha_hito": "2026-02-05",
+    "descripcion_hito": "Pruebas Físicas GUB"
+  },
+  "marcas_actuales": {
+    "press_banca": 41,
+    "agilidad_seg": 19.6,
+    "course_navette_palier": 8.0
+  },
+  "historico_peso": [
+    {"fecha": "2026-01-25", "valor": 92.4}
+  ]
+}
