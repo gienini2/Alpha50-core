@@ -1,2 +1,3 @@
 firebase-admin
-google-cloud-firestore
+flask
+functions-framework
