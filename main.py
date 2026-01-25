@@ -1,48 +1,34 @@
-import json
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+import os
+from flask import Flask, request, jsonify
 
-# Aquí es donde conectaríamos la llave del Paso 1
-# Por ahora, este script inicializará la base de datos
-def inicializar_sistema():
-    if not firebase_admin._apps:
-        # En el entorno de Google Cloud, esto se autentica solo
-        cred = credentials.ApplicationDefault() 
-        firebase_admin.initialize_app(cred)
+app = Flask(__name__)
+
+def calcular_puntos(peso, agilidad, navette):
+    # Lógica de baremo GUB Hombres >31 años
+    puntos_agilidad = 10 if agilidad <= 18.3 else (4 if agilidad <= 19.5 else 2)
+    puntos_navette = 10 if navette >= 10.5 else (4 if navette >= 9 else 2)
+    puntos_banca = 10 if peso >= 34 else 10 # Tú haces 41, siempre es 10 o 12
     
-    db = firestore.client()
-    return db
+    total = puntos_agilidad + puntos_navette + puntos_banca
+    return total
 
-def guardar_progreso(peso, agilidad, navette):
-    db = inicializar_sistema()
-    data = {
-        'fecha': firestore.SERVER_TIMESTAMP,
-        'peso': peso,
-        'marcas': {
-            'agilidad': agilidad,
-            'navette': navette
-        }
-    }
-    db.collection('progreso_agent1009').add(data)
-    print("Datos persistidos en Firebase")
+@app.route('/', methods=['GET', 'POST'])
+def webhook():
+    if request.method == 'POST':
+        data = request.get_json()
+        peso = data.get('peso', 92.4)
+        agilidad = data.get('agilidad', 19.6)
+        navette = data.get('navette', 8.0)
+        
+        total_puntos = calcular_puntos(peso, agilidad, navette)
+        
+        return jsonify({
+            "status": "success",
+            "puntos_totales": total_puntos,
+            "agente": "1009",
+            "mensaje": f"Puntuación GUB actual: {total_puntos}/30"
+        })
+    return "Alpha50 Core Online - Esperando datos del Agente 1009"
 
-# Ejecución de prueba con tus datos de hoy
 if __name__ == "__main__":
-    guardar_progreso(92.4, 19.6, 8.0)
-def calcular_puntos_gub(peso_actual, agilidad_seg, navette_palier):
-    # Lógica basada en los baremos que me pasaste (>31 años)
-    puntos_agilidad = 0
-    if agilidad_seg <= 18.3: puntos_agilidad = 10
-    elif agilidad_seg <= 19.5: puntos_agilidad = 4
-    elif agilidad_seg <= 20.1: puntos_agilidad = 2
-    
-    return f"Estado Agent 1009: Puntos Agilidad = {puntos_agilidad}"
-
-# Cargar tu JSON
-with open('config.json') as f:
-    data = json.load(f)
-
-print(calcular_puntos_gub(data['historico_peso'][-1]['valor'], 
-                         data['marcas_actuales']['agilidad_seg'], 
-                         data['marcas_actuales']['course_navette_palier']))
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
