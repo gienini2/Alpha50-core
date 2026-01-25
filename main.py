@@ -1,7 +1,8 @@
 import os
 from flask import Flask, request, jsonify
 from datetime import datetime
-
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 app = Flask(__name__)
 
 # Base de datos temporal (En el futuro conectaremos con Firebase Realtime DB)
@@ -49,3 +50,4 @@ def alpha50_webhook():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
