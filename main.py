@@ -39,8 +39,9 @@ def enviar_a_telegram(mensaje):
 # --- RUTAS ---
 @app.route('/', methods=['GET', 'POST'])
 def alpha50_webhook():
-    # Solo envía mensaje si el servidor arranca bien
-    return "Alpha50 Health Monitor Online."
+    enviar_a_telegram("✅ Sistema Alpha50 reiniciado y operativo.")
+    return "OK"
+
 
 @app.route('/test')
 def test_bot():
@@ -51,4 +52,5 @@ if __name__ == "__main__":
     # Importante: Cloud Run dicta el puerto por variable de entorno
     port = int(os.environ.get("PORT", 8080))
     app.run(debug=False, host="0.0.0.0", port=port)
+
 
