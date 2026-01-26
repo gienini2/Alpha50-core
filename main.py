@@ -47,7 +47,15 @@ def alpha50_webhook():
         })
     
     return "Alpha50 Health Monitor Online - Esperando datos biométricos."
-
+@app.route('/test')
+def test_bot():
+    token = os.environ.get("TELEGRAM_TOKEN")
+    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    payload = {"chat_id": chat_id, "text": "🎯 Prueba desde Google Cloud"}
+    r = requests.post(url, json=payload)
+    return f"Respuesta de Telegram: {r.text}"
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
