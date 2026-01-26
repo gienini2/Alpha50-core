@@ -1,61 +1,33 @@
 import os
+import requests  # <--- FALTABA ESTO
 from flask import Flask, request, jsonify
 from datetime import datetime
-TOKEN = os.environ.get("TELEGRAM_TOKEN")
-CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+
 app = Flask(__name__)
 
-# Base de datos temporal (En el futuro conectaremos con Firebase Realtime DB)
-historico_salud = []
+# Configuración desde variables de entorno
+TOKEN = os.environ.get("TELEGRAM_TOKEN")
+CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 
-def analizar_estado_entreno(body_battery, sueno_score):
-    if sueno_score > 80 and body_battery > 70:
-        return "ÓPTIMO: Puedes dar el 100% en la carrera de hoy."
-    elif sueno_score < 50:
-        return "RECUPERACIÓN: Baja la intensidad, prioriza caminar rápido sobre correr."
-    return "ESTÁNDAR: Sigue el plan eis9.pdf sin cambios."
+def enviar_a_telegram(mensaje):
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
+    payload = {"chat_id": CHAT_ID, "text": mensaje}
+    try:
+        r = requests.post(url, json=payload)
+        return r.text
+    except Exception as e:
+        return str(e)
 
 @app.route('/', methods=['GET', 'POST'])
 def alpha50_webhook():
-    if request.method == 'POST':
-        data = request.get_json()
-        
-        # Extraer datos recibidos
-        peso = data.get('peso', 92.4)
-        sueno = data.get('sueno_score', 0)
-        battery = data.get('body_battery_max', 0)
-        fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+    # Enviamos un mensaje automático al entrar para confirmar que rula
+    enviar_a_telegram("🚀 Alpha50-Core detectado: Servidor Online y vinculado.")
+    return "Alpha50 Health Monitor Online - Mensaje de prueba enviado a Telegram."
 
-        # Lógica de salud y mejora
-        recomendacion = analizar_estado_entreno(battery, sueno)
-        
-        # Guardar en el log (Memoria del sistema)
-        registro = {
-            "fecha": fecha,
-            "peso": peso,
-            "sueno": sueno,
-            "body_battery": battery,
-            "recomendacion": recomendacion
-        }
-        historico_salud.append(registro)
-
-        return jsonify({
-            "status": "registrado",
-            "mensaje": "Datos de salud sincronizados con Alpha50-Core",
-            "analisis": recomendacion,
-            "progreso_peso": f"Actual: {peso}kg | Meta: 80kg"
-        })
-    
-    return "Alpha50 Health Monitor Online - Esperando datos biométricos."
 @app.route('/test')
 def test_bot():
-    token = os.environ.get("TELEGRAM_TOKEN")
-    chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": "🎯 Prueba desde Google Cloud"}
-    r = requests.post(url, json=payload)
-    return f"Respuesta de Telegram: {r.text}"
+    res = enviar_a_telegram("🎯 Prueba manual desde la ruta /test")
+    return f"Respuesta de Telegram: {res}"
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
-
-
