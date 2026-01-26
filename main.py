@@ -5,6 +5,33 @@ from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, db
 
+# Configuración de Alpha50 Firebase
+def inicializar_firebase():
+    # El nombre exacto de tu archivo JSON
+    nombre_archivo_credenciales = 'alpha50-fcc77-firebase-adminsdk-fbsvc-a9f291f3ef.json'
+    url_database = 'https://alpha50-fcc77-default-rtdb.europe-west1.firebasedatabase.app'
+
+    if not firebase_admin._apps:
+        try:
+            cred = credentials.Certificate(nombre_archivo_credenciales)
+            firebase_admin.initialize_app(cred, {
+                'databaseURL': url_database
+            })
+            print("✅ Conexión con Alpha50-Firebase establecida.")
+        except Exception as e:
+            print(f"❌ Error al conectar con Firebase: {e}")
+
+# Llamar a la función
+inicializar_firebase()
+
+# Ejemplo para guardar tu peso de hoy (92.1 kg)
+def registrar_peso_diario(peso):
+    ref = db.reference('usuarios/juan_pablo/seguimiento')
+    ref.push({
+        'fecha': '2026-01-26',
+        'peso': peso,
+        'objetivo': 80
+    })
 # Esto es lo que usaremos para que yo RECUERDE tus 92,1 kg
 cred = credentials.Certificate("alpha50-fcc77-firebase-adminsdk-fbsvc-a9f291f3ef.json")
 firebase_admin.initialize_app(cred, {
@@ -46,4 +73,5 @@ def test_bot():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
 
