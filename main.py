@@ -2,7 +2,22 @@ import os
 import requests  # <--- FALTABA ESTO
 from flask import Flask, request, jsonify
 from datetime import datetime
+import firebase_admin
+from firebase_admin import credentials, db
 
+# Esto es lo que usaremos para que yo RECUERDE tus 92,1 kg
+cred = credentials.Certificate("alpha50-fcc77-firebase-adminsdk-fbsvc-a9f291f3ef.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://alpha50-fcc77-default-rtdb.europe-west1.firebasedatabase.app'
+})
+
+def guardar_progreso(usuario, peso, estado):
+    ref = db.reference(f'/usuarios/{usuario}/progreso')
+    ref.push({
+        'fecha': '2026-01-26',
+        'peso': peso,
+        'estado_intestino': estado
+    })
 app = Flask(__name__)
 
 # Configuración desde variables de entorno
@@ -31,3 +46,4 @@ def test_bot():
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+
