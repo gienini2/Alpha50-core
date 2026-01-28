@@ -1,0 +1,16 @@
+{
+  "fecha": "2026-01-28",
+  "fase": "intermedio",
+  "semana": 9,
+  "dia": "miercoles",
+  "entreno": "anaerobico",
+  "sensacion_global": 7,
+  "fatiga": 6,
+  "motivacion": 8,
+  "dolor": {
+    "rodilla": 0,
+    "espalda": 1,
+    "hombro": 0
+  },
+  "comentario": "series duras pero bien controladas"
+}
