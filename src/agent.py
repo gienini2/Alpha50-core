@@ -11,7 +11,7 @@ def send(msg):
 
 # --- Firebase ---
 cred = credentials.Certificate(json.loads(os.environ["FIREBASE_SA_JSON"]))
-initialize_app(cred, {"databaseURL": "https://TU-PROYECTO.firebaseio.com"})
+initialize_app(cred, {"databaseURL": "https://alpha50-fcc77-default-rtdb.europe-west1.firebasedatabase.app/"})
 
 today = datetime.date.today()
 dow = today.strftime("%A").lower()  # monday...
