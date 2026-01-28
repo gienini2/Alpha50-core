@@ -1,0 +1,20 @@
+name: Alpha50 Agent
+on:
+  schedule:
+    - cron: "30 6 * * *"   # 07:30 España (UTC+1 aprox)
+    - cron: "0 19 * * *"   # 20:00 control
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+      - run: pip install firebase-admin requests
+      - run: python src/agent.py
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          FIREBASE_SA_JSON: ${{ secrets.FIREBASE_SA_JSON }}
