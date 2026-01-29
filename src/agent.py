@@ -15,6 +15,40 @@ def get_updates(offset=None):
         params["offset"] = offset
     r = requests.get(url, params=params).json()
     return r.get("result", [])
+for upd in updates:
+    msg = upd.get("message")
+    if not msg or "text" not in msg:
+        continue
+
+    text = msg["text"].strip()
+    parsed = parse_fisiologia(text)
+
+    if not parsed:
+        continue  # NO avanzamos offset
+
+    peso, bb, sueno = parsed
+    hoy = today.isoformat()
+
+    estado = (
+        "OPTIMO" if bb >= 80 and sueno >= 80
+        else "MEDIO" if bb >= 50
+        else "BAJO"
+    )
+
+    db.reference(f"fisiologia/{hoy}").set({
+        "peso": peso,
+        "body_battery": bb,
+        "sueno": sueno,
+        "estado": estado
+    })
+
+    send(
+        f"Datos recibidos correctamente.\n"
+        f"Estado fisiológico: {estado}."
+    )
+
+    # SOLO AQUÍ avanzamos el offset
+    meta_ref.update({"last_update_id": upd["update_id"] + 1})
 
 
 # --- Firebase ---
