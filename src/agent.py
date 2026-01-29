@@ -19,6 +19,7 @@ def get_updates(offset=None):
     return r.json().get("result", [])
 
 def parse_fisiologia(text):
+    text = text.replace(",", ".")
     nums = re.findall(r"\d+\.?\d*", text)
     if len(nums) < 3:
         return None
@@ -46,9 +47,16 @@ ref = db.reference("estado")
 estado = ref.get() or {"fase":"intermedio","semana":9}
 
 # Enviar saludo inicial
-send(f"☀️ Buenos días.\nHoy es {dia.capitalize()}.\n"
-     f"Semana {estado['semana']} – {estado['fase']}.\n"
-     "Dame: Peso, Body Battery y Sueño (0–100).")
+control_ref = db.reference("sistema/control")
+control = control_ref.get() or {}
+hoy = today.isoformat()
+
+if control.get("saludo_fecha") != hoy:
+    send(f"☀️ Buenos días.\nHoy es {dia.capitalize()}.\n"
+         f"Semana {estado['semana']} – {estado['fase']}.\n"
+         "Dame: Peso, Body Battery y Sueño (0–100).")
+    control_ref.update({"saludo_fecha": hoy})
+
 
 # Recuperar último update_id procesado
 meta_ref = db.reference("sistema/telegram")
