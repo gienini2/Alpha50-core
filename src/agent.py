@@ -85,33 +85,35 @@ for upd in updates:
     
     peso, bb, sueno = parsed
     hoy = today.isoformat()
+
     estado_fisio = (
         "OPTIMO" if bb >= 80 and sueno >= 80
         else "MEDIO" if bb >= 50
         else "BAJO"
     )
-    
-    # Guardar en Firebase
-    db.reference(f"fisiologia/{hoy}").set({
-    "peso": float(peso),
-    "body_battery": int(bb),
-    "sueno": int(sueno),
-    "estado": estado_fisio   # ← string plano
-})
-    # Decidir qué toca hoy (fase temprana)
-db.reference(f"fisiologia/{hoy}").set({...})
-dias_descanso = ["jueves", "domingo"]
 
-if dia in dias_descanso:
-    send(f"✅ Datos recibidos correctamente.\n"
-         f"Estado fisiológico: **(estado_fisio)**.\n"
-         "🛑 Hoy toca **DESCANSO**.\n"
-         "Recupera, estira suave y duerme bien.")
-else:
-    send(f"✅ Datos recibidos correctamente.\n"
-         f"Estado fisiológico: **(estado_fisio)**.\n"
-         "🏋️ Hoy toca **ENTRENAR**.\n"
-         "En breve te digo el tipo de sesión.")
+    payload = {
+        "peso": float(peso),
+        "body_battery": int(bb),
+        "sueno": int(sueno),
+        "estado": estado_fisio
+    }
 
-    # CRÍTICO: Avanzar offset solo después de procesar correctamente
+    db.reference(f"fisiologia/{hoy}").set(payload)
+
+    dias_descanso = ["jueves", "domingo"]
+
+    if dia in dias_descanso:
+        send(
+            f"✅ Datos recibidos correctamente.\n"
+            f"Estado fisiológico: **{estado_fisio}**.\n"
+            "🛑 Hoy toca **DESCANSO**."
+        )
+    else:
+        send(
+            f"✅ Datos recibidos correctamente.\n"
+            f"Estado fisiológico: **{estado_fisio}**.\n"
+            "🏋️ Hoy toca **ENTRENAR**."
+        )
+
     meta_ref.update({"last_update_id": upd["update_id"] + 1})
