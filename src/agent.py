@@ -93,11 +93,11 @@ for upd in updates:
     
     # Guardar en Firebase
     db.reference(f"fisiologia/{hoy}").set({
-        "peso": peso,
-        "body_battery": bb,
-        "sueno": sueno,
-        "estado": estado_fisio
-    })
+    "peso": float(peso),
+    "body_battery": int(bb),
+    "sueno": int(sueno),
+    "estado": estado_fisio   # ← string plano
+})
     # Decidir qué toca hoy (fase temprana)
 db.reference(f"fisiologia/{hoy}").set({...})
 dias_descanso = ["jueves", "domingo"]
