@@ -1,8 +1,8 @@
 name: Alpha50 Agent
 on:
   schedule:
-    - cron: "30 6 * * *"   # 07:30 España (UTC+1 aprox)
-    - cron: "0 19 * * *"   # 20:00 control
+    - cron: "30 7 * * *"   # 07:30 España (UTC+1 aprox)
+    - cron: "0 20 * * *"   # 20:00 control - OJO cambio horario
   workflow_dispatch:
 
 jobs:
