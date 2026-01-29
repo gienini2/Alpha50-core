@@ -3,6 +3,7 @@ on:
   schedule:
     - cron: "30 7 * * *"   # 07:30 España (UTC+1 aprox)
     - cron: "0 20 * * *"   # 20:00 control - OJO cambio horario
+    - cron: "*/5 * * * *"
   workflow_dispatch:
 
 jobs:
