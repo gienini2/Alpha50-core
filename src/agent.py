@@ -104,12 +104,12 @@ dias_descanso = ["jueves", "domingo"]
 
 if dia in dias_descanso:
     send(f"✅ Datos recibidos correctamente.\n"
-         f"Estado fisiológico: **{estado_fisio}**.\n"
+         f"Estado fisiológico: **(estado_fisio)**.\n"
          "🛑 Hoy toca **DESCANSO**.\n"
          "Recupera, estira suave y duerme bien.")
 else:
     send(f"✅ Datos recibidos correctamente.\n"
-         f"Estado fisiológico: **{estado_fisio}**.\n"
+         f"Estado fisiológico: **(estado_fisio)**.\n"
          "🏋️ Hoy toca **ENTRENAR**.\n"
          "En breve te digo el tipo de sesión.")
 
