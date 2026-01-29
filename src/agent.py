@@ -98,12 +98,19 @@ for upd in updates:
         "sueno": sueno,
         "estado": estado_fisio
     })
-    
-    send(
-        f"✅ Datos recibidos correctamente.\n"
-        f"Estado fisiológico: **{estado_fisio}**.\n"
-        f"En breve te digo qué toca hoy."
-    )
-    
+    # Decidir qué toca hoy (fase temprana)
+dias_descanso = ["jueves", "domingo"]
+
+if dia in dias_descanso:
+    send(f"✅ Datos recibidos correctamente.\n"
+         f"Estado fisiológico: **{estado_fisio}**.\n"
+         "🛑 Hoy toca **DESCANSO**.\n"
+         "Recupera, estira suave y duerme bien.")
+else:
+    send(f"✅ Datos recibidos correctamente.\n"
+         f"Estado fisiológico: **{estado_fisio}**.\n"
+         "🏋️ Hoy toca **ENTRENAR**.\n"
+         "En breve te digo el tipo de sesión.")
+
     # CRÍTICO: Avanzar offset solo después de procesar correctamente
     meta_ref.update({"last_update_id": upd["update_id"] + 1})
