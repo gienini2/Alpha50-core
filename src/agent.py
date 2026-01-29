@@ -99,6 +99,7 @@ for upd in updates:
         "estado": estado_fisio
     })
     # Decidir qué toca hoy (fase temprana)
+db.reference(f"fisiologia/{hoy}").set({...})
 dias_descanso = ["jueves", "domingo"]
 
 if dia in dias_descanso:
