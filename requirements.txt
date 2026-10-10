@@ -1,6 +1,7 @@
-flask
-gunicorn
-requests
-firebase-admin
-
-
+# Alpha50 IA (v1) -- dependencias del módulo
+requests==2.32.5          # envío por el relay de Telegram (/notify)
+python-dotenv==1.2.1      # carga del .env en el scheduler
+schedule                  # disparo diario del flujo matutino
+garminconnect             # API (no oficial) de Garmin Connect: métricas, actividades y workouts
+pypdf                     # parser de los PDFs del plan -> JSON
+reportlab                 # generación de PDFs de planes/hojas imprimibles
