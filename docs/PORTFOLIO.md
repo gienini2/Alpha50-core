@@ -149,14 +149,14 @@ honestamente si cumplió. Corre como servicio Windows integrado en mi asistente
                  Garmin Connect (API no oficial, garminconnect)
                   ▲                     │ métricas + actividades + series
      workout      │                     ▼
-     estructurado │      ┌──────────────────────────────────────────────┐
+     estructurado │      ┌───────────────────────────────────────────────┐
      + agenda     │      │  Alpha50Scheduler (servicio NSSM, PC Windows) │
                   │      │  07:00 + catch-up cada 30 s                   │
                   │      │                                               │
                   │      │  agente_metrica ──► índice 0-100 + semáforo   │
                   │      │        │                                      │
                   │      │        ▼                                      │
-                  │      │  SQLite  alpha50_cronologia.db  (7 tablas, WAL)│
+                  │      │  SQLite alpha50_cronologia.db  (7 tablas, WAL)│
                   │      │        ▲            │                         │
                   │      │  agente_cronologia  │  agente_plan (plan JSON)│
                   │      │  (semana/día/nivel) ▼                         │
@@ -165,7 +165,7 @@ honestamente si cumplió. Corre como servicio Windows integrado en mi asistente
                   │      │        │                  garmin_actividades  │
                   │      │        │                  (auto-registro +    │
                   │      │        │                   bronca diaria)     │
-                  └──────┼── connectors/garmin_workouts ◄── "A" carrera │
+                  └──────┼── connectors/garmin_workouts ◄── "A" carrera  │
                          └────────┼──────────────────────────────────────┘
                                   │ POST /notify (X-Relay-Key)
                                   ▼
