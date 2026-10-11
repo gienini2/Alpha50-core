@@ -126,8 +126,8 @@ honestamente si cumplió. Corre como servicio Windows integrado en mi asistente
 ### Generación de documentos
 - **Parser de PDF → JSON** del plan semanal (`pypdf` + regex), que normaliza la fuerza a
   pares torso/pierna.
-- **PDFs con ReportLab**: plan de preparación de pruebas físicas con calendario día a día
-  y hoja imprimible de rutina sin material.
+- **PDF con ReportLab**: hoja imprimible de rutina sin material (para entrenar fuera de
+  casa).
 
 ### Operación y fiabilidad
 - Servicio Windows (**NSSM**) con **catch-up**: si el PC arranca después de las 07:00,
@@ -214,7 +214,7 @@ v0: **Firebase Realtime Database** (`firebase-admin`).
 - `requests` (HTTP), `python-dotenv` (configuración).
 
 **Documentos:** `pypdf` (extracción de texto del PDF del plan + regex), **ReportLab**
-(generación de PDFs maquetados: tablas, estilos, plantillas de página).
+(generación de PDF maquetado: tablas, estilos, plantilla de página).
 
 **Infra / DevOps:** Windows 11 + **NSSM** (servicio `Alpha50Scheduler`), **Tailscale**
 (VPN mesh PC ↔ servidor), servidor **Debian** con **systemd** para el relay de Telegram,
@@ -260,7 +260,7 @@ workouts y cronología sobre BD temporal) y CI en GitHub Actions.
 ---
 
 ## 7. Escala del proyecto
-- **v1**: 11 módulos Python + 1 conector · **~4.100 líneas** · **126 funciones** ·
+- **v1**: 10 módulos Python + 1 conector · **~3.900 líneas** · **120 funciones** ·
   **7 tablas** SQLite · 15 commits específicos dentro del monorepo de Jarvis
   (julio–septiembre 2026).
 - **Datos por día**: ~12 métricas biométricas + actividades con JSON crudo completo y

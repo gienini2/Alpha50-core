@@ -22,9 +22,12 @@ if (-not (Test-Path "$JarvisDir\alpha50\scheduler.py")) {
     throw "No encuentro $JarvisDir\alpha50\scheduler.py -- revisa -JarvisDir"
 }
 
-# 1. Código Alpha50 (solo .py; sin backups)
+# Scripts personales que NO se publican (contienen datos propios)
+$Excluir = @("gen_plan_pdf.py")
+
+# 1. Código Alpha50 (solo .py; sin backups ni excluidos)
 Get-ChildItem "$JarvisDir\alpha50\*.py" |
-    Where-Object { $_.Name -notlike "*_backup_*" } |
+    Where-Object { $_.Name -notlike "*_backup_*" -and $Excluir -notcontains $_.Name } |
     ForEach-Object {
         Copy-Item $_.FullName "$Repo\alpha50\$($_.Name)" -Force
         Write-Host "  alpha50\$($_.Name)"

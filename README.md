@@ -53,7 +53,6 @@ alpha50/
   garmin_actividades.py Ingesta de actividades/series de Garmin, auto-registro y "bronca"
   history_reader.py     Lectura del historial (solo SELECT) para la API / el agente de Jarvis
   parse_alpha50_pdf.py  PDF del plan semanal → JSON
-  gen_plan_pdf.py       PDF de un plan de pruebas físicas (ReportLab)
   gen_hoja_asturias.py  Hoja imprimible de rutina sin material (ReportLab)
   check_fecha.py        Utilidad: ver el registro de un día
 connectors/
