@@ -225,7 +225,7 @@ v0, preparado para Cloud Run), **git**.
 Garmin), autenticación del relay por cabecera `X-Relay-Key`, persistencia de tokens OAuth
 en lugar de credenciales en cada arranque, GitHub Secrets (v0).
 
-**Calidad:** `unittest` (19 tests de la lógica pura: índice, recortes, parseo de
+**Calidad:** `unittest` (27 tests de la lógica pura: índice, recortes, parseo de
 workouts y cronología sobre BD temporal) y CI en GitHub Actions.
 
 **Otras libs (stdlib):** `sqlite3`, `re`, `datetime`, `json`, `threading`, `argparse`,
@@ -269,7 +269,7 @@ workouts y cronología sobre BD temporal) y CI en GitHub Actions.
   calendarios semanales distintos.
 - **Interfaz**: 9 comandos de Telegram + intenciones en lenguaje natural; 5 estados de
   diálogo.
-- **Calidad**: 19 tests automatizados y CI.
+- **Calidad**: 27 tests automatizados y CI.
 - **v0**: 35 commits y **2.182 ejecuciones** programadas en GitHub Actions
   (enero–marzo 2026).
 - **Usuarios**: 1 (uso personal diario desde julio de 2026).
@@ -293,7 +293,7 @@ workouts y cronología sobre BD temporal) y CI en GitHub Actions.
   manual.
 - **Migré un prototipo *serverless*** (Firebase + GitHub Actions, 2.182 ejecuciones) a un
   **servicio Windows autoalojado** (NSSM + Tailscale + relay en Debian) integrado en mi
-  asistente de IA, con *catch-up*, reintentos y 19 tests en CI.
+  asistente de IA, con *catch-up*, reintentos y 27 tests en CI.
 
 **Tecnologías (una línea):** Python · SQLite · Garmin Connect API (garminconnect) ·
 Telegram Bot API · schedule · threading · pypdf · ReportLab · requests · python-dotenv ·
