@@ -4,15 +4,17 @@ Respuestas de Telegram a Alpha50 con y sin el prefijo "/alpha50".
 
 Ejecutar:  .venv\\Scripts\\python.exe -m unittest tests.test_alpha50_respuestas -v
 
-Caso real (01/11/2026): el bot pidió las métricas que Garmin no trajo y la
-respuesta "/alpha50 58/98/equilibrado/54/100.5" devolvió el menú de ayuda en vez
-de registrarlas. Además "equilibrado" (la palabra que el propio bot propone) no
-puntuaba como VFC buena.
+Caso real (01/11/2026): el bot pidió a las 07:00 las métricas que Garmin no
+trajo y la respuesta "/alpha50 58/98/equilibrado/54/100.5", enviada pasadas las
+2 h, devolvió el menú de ayuda: la pregunta pendiente ya había caducado. Ahora la
+pregunta de métricas vale todo el día (el resto sigue caducando a las 2 h).
+Además "equilibrado" (la palabra que propone el propio bot) no puntuaba como VFC buena.
 
 Sin red: BD SQLite temporal, sin Garmin, sin relay. El decisor asíncrono se
 captura en vez de ejecutarse.
 """
 import os
+import sqlite3
 import sys
 import tempfile
 import types
@@ -76,10 +78,40 @@ class TestRespuestasAlpha50(unittest.TestCase):
                           m["fc_reposo"], m["peso_kg"]), (58, 98, "equilibrado", 54, 100.5))
         self.assertIsNone(scheduler._sesion_get()["esperando"])
 
-    def test_metricas_sin_prefijo_siguen_funcionando(self):
+    def test_sin_prefijo_alpha50_no_responde(self):
+        # Diseño desde 25/10: solo mensajes que empiezan por /alpha50
         self._pendiente_metricas()
-        r = scheduler.alpha50_intent_handler("58 / 98 / equilibrado / 54 / 100,5")
+        self.assertIsNone(scheduler.alpha50_intent_handler("58 / 98 / equilibrado / 54 / 100,5"))
+
+    def _envejecer_sesion(self, horas):
+        con = sqlite3.connect(scheduler.DB_PATH)
+        con.execute("UPDATE alpha50_sesion SET actualizado="
+                    "datetime('now','localtime',?) WHERE id=1", (f"-{horas} hours",))
+        con.commit()
+        con.close()
+
+    def test_pregunta_de_metricas_no_caduca_a_las_2h(self):
+        from datetime import datetime
+        if datetime.now().hour < 5:
+            self.skipTest("a esta hora, 5 h atrás es otro día")
+        self._pendiente_metricas()
+        self._envejecer_sesion(5)
+        r = scheduler.alpha50_intent_handler("/alpha50 58/98/equilibrado/54/100.5")
         self.assertIn("Métricas completadas", r)
+
+    def test_pregunta_de_metricas_de_ayer_caduca(self):
+        self._pendiente_metricas()
+        self._envejecer_sesion(30)
+        self.assertIsNone(scheduler._sesion_get()["esperando"])
+
+    def test_otras_preguntas_caducan_a_las_2h(self):
+        scheduler._sesion_update(esperando="opcion_cardio", contexto={})
+        self._envejecer_sesion(3)
+        self.assertIsNone(scheduler._sesion_get()["esperando"])
+
+    def test_subcomando_con_metricas_pendientes(self):
+        self._pendiente_metricas()
+        self.assertIn("Alpha50 — Semana", scheduler.alpha50_intent_handler("/alpha50 semana"))
 
     def test_prefijo_con_nombre_de_bot(self):
         self._pendiente_metricas()

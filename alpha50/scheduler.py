@@ -33,7 +33,7 @@ import sqlite3
 import requests
 import schedule
 import threading
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from typing import Optional
 
 # Windows/NSSM corre con cp1252: forzar UTF-8 en la salida para que los prints
@@ -93,6 +93,13 @@ def _sesion_init():
     con.close()
 
 
+SESSION_TTL_HOURS = 2
+# La pregunta de métricas de las 07:00 se contesta cuando JP mira el reloj, a
+# menudo horas después: no caduca a las 2 h sino al cambiar de día. (Caso real
+# 01/11/2026: contestó pasadas las 2 h y le salió el menú sin registrar nada.)
+ESPERAS_DEL_DIA = ("metricas", "metricas_faltantes")
+
+
 def _sesion_get() -> dict:
     _sesion_init()
     con = _connect_db()
@@ -105,7 +112,17 @@ def _sesion_get() -> dict:
         ctx = json.loads(row["contexto"]) if row["contexto"] else {}
     except Exception:
         ctx = {}
-    return {"esperando": row["esperando"], "opcion_elegida": row["opcion_elegida"], "contexto": ctx}
+    waiting = row["esperando"]
+    try:
+        hecho_en = datetime.strptime(row["actualizado"], "%Y-%m-%d %H:%M:%S")
+        if waiting in ESPERAS_DEL_DIA:
+            if hecho_en.date() != date.today():
+                waiting = None   # métricas de otro día: ya no valen
+        elif waiting and datetime.now() - hecho_en > timedelta(hours=SESSION_TTL_HOURS):
+            waiting = None   # una pregunta de hace horas ya no es lo que el usuario esta contestando ("no", "a"...)
+    except (TypeError, ValueError):
+        pass
+    return {"esperando": waiting, "opcion_elegida": row["opcion_elegida"], "contexto": ctx}
 
 
 def _sesion_write(s: dict):
@@ -142,6 +159,7 @@ def enviar_telegram(mensaje: str, parse_mode: str = "Markdown") -> bool:
     """
     url = f"{RELAY_URL}/notify"
     headers = {"X-Relay-Key": RELAY_API_KEY} if RELAY_API_KEY else {}
+    mensaje += "\n\n↩️ Para contestarme empieza por /alpha50 (p. ej. /alpha50 hecho)"
     try:
         r = requests.post(url, json={"message": mensaje}, headers=headers, timeout=10)
         if r.status_code == 200:
@@ -313,71 +331,45 @@ def _ejecutar_decisor(metricas_resultado: dict) -> bool:
 
 
 # ── INTENT HANDLER (llamado desde Jarvis) ─────────────────────────────────────
+# "/alpha50@NombreBot ..." es como Telegram manda el comando si se pulsa desde el menú.
+_EXPLICITO = re.compile(r"^\s*/?alpha50(?:@\w+)?\b[:,]?\s*(.*)$", re.IGNORECASE | re.DOTALL)
+
+# Subcomandos que no son respuesta a nada pendiente: van directos, para que
+# "/alpha50 semana" o "/alpha50 nivel Avanzado 3" no se lean como métricas.
+# (hecho/parcial/no pude NO van aquí: con algo pendiente deben pasar por la
+# sesión para conservar la opción de cardio elegida.)
+_SUBCOMANDOS_DIRECTOS = ("estado", "semana", "resumen", "tendencia", "progreso",
+                         "nivel", "ahora", "forzar", "debug", "ayuda", "help")
+
+
 def alpha50_intent_handler(texto_usuario: str) -> Optional[str]:
     """
-    Punto de entrada desde Jarvis (core/intent.py).
-    Devuelve respuesta para enviar al usuario, o None si no es un mensaje Alpha50.
-
-    Integración en core/intent.py:
-        from alpha50.scheduler import alpha50_intent_handler
-        # En classify() añadir antes del return:
-        resp_alpha50 = alpha50_intent_handler(texto)
-        if resp_alpha50:
-            return {"intent": "alpha50", "respuesta": resp_alpha50}
+    Punto de entrada desde Jarvis (core/processor.py). Alpha50 solo responde a mensajes que EMPIEZAN por
+    /alpha50 (o 'alpha50'): ya no se queda con un 'no', 'a' o 'hecho' suelto ni con frases de entreno en
+    lenguaje natural. Con una pregunta pendiente se contesta asi: '/alpha50 hecho', '/alpha50 a', '/alpha50 75 8 ...'.
+    Devuelve la respuesta, o None si el mensaje no es de Alpha50.
     """
-    # El relay puede exigir el prefijo "/alpha50" para enrutar la respuesta
-    # ("/alpha50 58/98/equilibrado/54/100.5", "/alpha50 a"). Se quita aquí: si lo
-    # que queda es un subcomando se ejecuta; si no, es la respuesta a lo que el
-    # bot está esperando (métricas, A/B/C, hecho...). Antes todo lo que llevaba
-    # el prefijo iba a _manejar_comando_alpha50 y las métricas acababan en el menú.
-    texto_usuario, con_prefijo = _quitar_prefijo_alpha50(texto_usuario)
-    texto_lower = texto_usuario.lower()
-
-    s = _sesion_get()
-
-    # ── Comandos y lenguaje natural de Alpha50 SIEMPRE primero ────────────────
-    # Funciona aunque haya un estado pendiente y sirve para desbloquear la sesión.
-    if con_prefijo:
-        if not texto_lower or _es_subcomando_alpha50(texto_lower):
-            return _manejar_comando_alpha50(f"alpha50 {texto_lower}".strip())
-    else:
-        cmd = _detectar_comando_alpha50(texto_lower)
-        if cmd is not None:
-            return _manejar_comando_alpha50(cmd)
-
-    resp = _responder_a_pendiente(texto_usuario, texto_lower, s)
-    if resp is None and con_prefijo:
-        # Iba dirigido a Alpha50 pero no encaja con nada pendiente → ayuda
-        return _manejar_comando_alpha50("alpha50")
-    return resp
-
-
-def _quitar_prefijo_alpha50(texto: str):
-    """'/alpha50 58/98' → ('58/98', True) · '/alpha50@MiBot hecho' → ('hecho', True)
-    · 'alpha50 estado' → ('estado', True) · 'qué entreno toca' → (igual, False)."""
-    t = texto.strip()
-    m = re.match(r"^/?alpha50(?:@\w+)?(?=\s|$)", t, flags=re.IGNORECASE)
+    m = _EXPLICITO.match(texto_usuario or "")
     if not m:
-        return t, False
-    return t[m.end():].strip(), True
+        return None
+    resto = m.group(1).strip()
+    if resto.lower().startswith(_SUBCOMANDOS_DIRECTOS):
+        return _manejar_comando_alpha50(f"alpha50 {resto.lower()}")
+    if resto:
+        respuesta = _responder_pendiente(resto)
+        if respuesta:
+            return respuesta
+    cmd = _detectar_comando_alpha50(texto_usuario.strip().lower())
+    return _manejar_comando_alpha50(cmd) if cmd is not None else None
 
 
-# Palabras que convierten el resto del mensaje en un subcomando de Alpha50
-# (mismas que reconoce _manejar_comando_alpha50).
-_SUBCOMANDOS = ("debug", "hecho", "completado", "parcial", "no pude", "saltado",
-                "nivel", "estado", "semana", "resumen", "tendencia", "progreso",
-                "ahora", "forzar", "ayuda", "help", "comandos")
-
-
-def _es_subcomando_alpha50(texto_lower: str) -> bool:
-    return any(texto_lower.startswith(k) for k in _SUBCOMANDOS)
-
-
-def _responder_a_pendiente(texto_usuario: str, texto_lower: str, s: dict) -> Optional[str]:
-    """Enruta la respuesta según lo que el bot esté esperando. None si no aplica."""
+def _responder_pendiente(texto_usuario: str) -> Optional[str]:
     from agente_decisor  import procesar_respuesta
     from agente_metrica  import ejecutar_con_datos_manuales, completar_metricas
 
+    texto_lower = texto_usuario.strip().lower()
+
+    s = _sesion_get()
     esperando = s["esperando"]
     contexto  = s["contexto"]
 
@@ -444,7 +436,6 @@ def _responder_a_pendiente(texto_usuario: str, texto_lower: str, s: dict) -> Opt
 
         return res.get("mensaje_telegram")
 
-    # No es un mensaje Alpha50 (los comandos se resuelven al principio)
     return None
 
 

@@ -57,7 +57,7 @@ alpha50/
   check_fecha.py        Utilidad: ver el registro de un día
 connectors/
   garmin_workouts.py    Construye el workout de carrera y lo sube + agenda en Garmin
-tests/                  27 tests de la lógica pura (unittest, sin red)
+tests/                  31 tests de la lógica pura (unittest, sin red)
 docs/                   Portfolio + esquema de ejemplo del plan
 legacy/v0-firebase/     Prototipo serverless de enero 2026 (Firebase + GitHub Actions)
 ```
