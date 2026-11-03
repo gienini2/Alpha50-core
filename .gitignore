@@ -1,1 +1,19 @@
-alpha50-fcc77-firebase-adminsdk-fbsvc-a9f291f3ef.json
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secretos -- nunca al repo
+.env
+*.env
+alpha50/.garmin_session/
+*firebase-adminsdk*.json
+
+# Datos personales / runtime (viven solo en el PC)
+*.db
+*.db-wal
+*.db-shm
+*.log
+alpha50/*.json
+alpha50/*.xlsx

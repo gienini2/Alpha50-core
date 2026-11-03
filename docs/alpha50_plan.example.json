@@ -1,0 +1,36 @@
+{
+  "_nota": "Esquema ILUSTRATIVO de alpha50/alpha50_plan.json (valores ficticios). El plan real no se publica: es contenido del Método Fitness Alpha50.",
+  "Intermedio": {
+    "1": {
+      "1": {
+        "tipo": "cardio",
+        "nombre_rutina": "Cardio S1",
+        "opciones": {
+          "carrera": {
+            "calentamiento": "10'",
+            "continua": "20'",
+            "series_1": "6x200m // 6x50\"",
+            "descanso_series_1": "1'30\"",
+            "descanso_post_continua": "3'",
+            "core": {"ejercicio_1": "Plancha 3x30\""}
+          },
+          "bici": {"calentamiento": "10'", "continua": "30'"},
+          "hiit": {"ciclos": 4, "trabajo_descanso": "40\" / 30\"", "ejercicios": ["Burpees", "Sentadilla salto"]}
+        }
+      },
+      "2": {
+        "tipo": "musculacion",
+        "nombre_rutina": "Fuerza S1",
+        "musculacion": {
+          "calentamiento": "10'",
+          "superseries": [
+            {"a": "Flexión normal (4x10)", "b": "Sentadilla (4x15)"},
+            {"a": "Fondos en silla (4x8)", "b": "Zancada (4x10)"}
+          ],
+          "descanso_entre_superseries": "1'30\"",
+          "estiramientos": "5'"
+        }
+      }
+    }
+  }
+}
